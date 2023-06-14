@@ -20,8 +20,9 @@ func NewServer(listenAddr string, scheduler *scheduler) *server {
 }
 
 func (server *server) start(bindAddr string) error {
-	server.router.HandleFunc("/ListPoints", server.scheduler.state.HTTPHandlerListPoints)
-	server.router.HandleFunc("/Scheduler/ListTasks", server.scheduler.HTTPHandlerListTasks)
-	server.router.HandleFunc("/Scheduler/NewTask", server.scheduler.HTTPHandlerNewTask)
+
+	server.router.HandleFunc("/api/points", server.scheduler.state.HTTPHandlerPoints)
+	server.router.HandleFunc("/api/tasks", server.scheduler.HTTPHandlerTasks)
+	server.router.HandleFunc("/api/task/new", server.scheduler.HTTPHandlerNewTask)
 	return http.ListenAndServe(bindAddr, server.router)
 }

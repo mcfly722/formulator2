@@ -48,7 +48,7 @@ func LoadStateFromFile(stateFile string) (*State, error) {
 	return &state, nil
 }
 
-func (state *State) HTTPHandlerListPoints(w http.ResponseWriter, r *http.Request) {
+func (state *State) HTTPHandlerPoints(w http.ResponseWriter, r *http.Request) {
 	state.ready.Lock()
 	defer state.ready.Unlock()
 

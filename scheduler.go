@@ -64,7 +64,7 @@ func (scheduler *scheduler) HTTPHandlerNewTask(w http.ResponseWriter, r *http.Re
 	}
 }
 
-func (scheduler *scheduler) HTTPHandlerListTasks(w http.ResponseWriter, r *http.Request) {
+func (scheduler *scheduler) HTTPHandlerTasks(w http.ResponseWriter, r *http.Request) {
 
 	scheduler.ready.Lock()
 	defer scheduler.ready.Unlock()
