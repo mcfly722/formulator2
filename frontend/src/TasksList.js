@@ -31,44 +31,76 @@ class TasksList extends Component {
         axios.get(endpoint + "api/tasks").then((res) => {
             if (res.data) {
                 this.setState({ data: res.data })
-                //console.log()
+                //console.log(res.data)
             }
         })
     }
 
     render() {
+
+        const headerStyle = {
+            padding: "10px",
+            backgroundColor: "#DADBDD",
+            fontFamily: "monospace"
+        }
+
+        const dataNormalStyle = {
+            padding: "10px",
+            fontFamily: "monospace"
+        }
+
+        const dataOutdatedStyle = {
+            padding: "10px",
+            fontFamily: "monospace",
+            backgroundColor: "#FF6347",
+        }
+
+        const dataDoneStyle = {
+            padding: "10px",
+            fontFamily: "monospace",
+            backgroundColor: "#50C878",
+        }
+
+        function taskStyle(task) {
+            if (task.TimeoutedOnSec > 0) { return dataOutdatedStyle }
+            return dataNormalStyle
+        }
+
         return (
             <div>
-                <div>
-                    <Header className="header" as="h2" color="blue">
-                        Tasks List:
-                    </Header>
-                    <table border="1px" style={{ "border-collapse": "collapse" }}>
-                        <thead >
-                            <tr >
-                                <th style={{ padding: "10px" }}>Number</th>
-                                <th style={{ padding: "10px" }}>Sequence</th>
-                                <th style={{ padding: "10px" }}>Agent</th>
-                                <th style={{ padding: "10px" }}>StartedAt</th>
-                                <th style={{ padding: "10px" }}>LastConfirmationAt</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {
-                                this.state.data.map((task, index) => (
-                                    <tr>
-                                        <td style={{ padding: "10px" }}>{task.Number}</td>
-                                        <td style={{ padding: "10px" }}>{task.Sequence}</td>
-                                        <td style={{ padding: "10px" }}>{task.Agent}</td>
-                                        <td style={{ padding: "10px" }}>{task.StartedAt}</td>
-                                        <td style={{ padding: "10px" }}>{task.LastConfirmationAt}</td>
-                                    </tr>
-                                ))
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            </div >
+                <Header className="header" as="h2" color="blue">
+                    Tasks List:
+                </Header>
+                <table border="1px" style={{ "borderCollapse": "collapse" }}>
+                    <thead >
+                        <tr >
+                            <th style={headerStyle}>Number</th>
+                            <th style={headerStyle}>Sequence</th>
+                            <th style={headerStyle}>Agent</th>
+                            <th style={headerStyle}>Started At</th>
+                            <th style={headerStyle}>Elapsed</th>
+                            <th style={headerStyle}>Confirmation</th>
+                            <th style={headerStyle}>Timeouted On (Sec)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {
+                            this.state.data.map((task, index) => (
+                                <tr key={index}>
+                                    <td style={taskStyle(task)}>{task.Number}</td>
+                                    <td style={taskStyle(task)}>{task.Sequence}</td>
+                                    <td style={taskStyle(task)}>{task.Agent}</td>
+                                    <td style={taskStyle(task)}>{task.StartedAt}</td>
+                                    <td style={taskStyle(task)}>{task.Elapsed}</td>
+                                    <td style={taskStyle(task)}>{task.LastConfirmationAgo}</td>
+                                    <td style={taskStyle(task)}>{task.TimeoutedOnSec}</td>
+                                </tr>
+                            ))
+                        }
+                    </tbody>
+                </table>
+            </div>
+
         );
     }
 }
