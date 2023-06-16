@@ -12,7 +12,7 @@ type server struct {
 	state     *State
 }
 
-func NewServer(listenAddr string, scheduler *scheduler, state *State) *server {
+func newServer(listenAddr string, scheduler *scheduler, state *State) *server {
 	return &server{
 		router:    mux.NewRouter(),
 		scheduler: scheduler,
@@ -22,10 +22,10 @@ func NewServer(listenAddr string, scheduler *scheduler, state *State) *server {
 
 func (server *server) start(bindAddr string) error {
 
-	server.router.HandleFunc("/api/state", server.state.HTTPHandlerState).Methods("GET")
-	server.router.HandleFunc("/api/points", server.state.HTTPHandlerPoints).Methods("GET")
-	server.router.HandleFunc("/api/tasks", server.scheduler.HTTPHandlerTasks).Methods("GET")
-	server.router.HandleFunc("/api/task/{id}", server.scheduler.HTTPHandlerTask).Methods("GET", "DELETE")
+	server.router.HandleFunc("/api/state", server.state.httpHandlerState).Methods("GET")
+	server.router.HandleFunc("/api/points", server.state.httpHandlerPoints).Methods("GET")
+	server.router.HandleFunc("/api/tasks", server.scheduler.httpHandlerTasks).Methods("GET")
+	server.router.HandleFunc("/api/task/{id}", server.scheduler.httpHandlerTask).Methods("GET", "DELETE")
 
 	return http.ListenAndServe(bindAddr, server.router)
 }

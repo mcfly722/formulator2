@@ -10,7 +10,7 @@ type Point struct {
 	Y float64
 }
 
-func LoadPointsFromFile(samplesFile string) ([]Point, error) {
+func loadPointsFromFile(samplesFile string) ([]Point, error) {
 	body, err := os.ReadFile(samplesFile)
 	if err != nil {
 		return nil, err

@@ -12,36 +12,34 @@ import (
 )
 
 type scheduler struct {
-	state *State
-	Tasks []*Task
-
-	lastCounter  uint64
-	lastSequence string
-
+	state             *State
+	tasks             []*Task
+	lastCounter       uint64
+	lastSequence      string
 	defaultTimeoutSec uint64
 	ready             sync.Mutex
 }
 
-func NewScheduler(state *State, defaultTimeoutSec uint64) *scheduler {
+func newScheduler(state *State, defaultTimeoutSec uint64) *scheduler {
 
 	return &scheduler{
 		state:             state,
-		Tasks:             []*Task{},
+		tasks:             []*Task{},
 		lastCounter:       state.Counter,
 		lastSequence:      state.LastSequence,
 		defaultTimeoutSec: defaultTimeoutSec,
 	}
 }
 
-func (scheduler *scheduler) NewTask(agent string) Task {
+func (scheduler *scheduler) newTask(agent string) Task {
 
 	scheduler.ready.Lock()
 	defer scheduler.ready.Unlock()
 
 	// search and return first outdated
-	for _, task := range scheduler.Tasks {
-		if task.IsOutdated() && !task.IsDone() {
-			task.Reset(agent)
+	for _, task := range scheduler.tasks {
+		if task.isOutdated() && !task.isDone() {
+			task.reset(agent)
 			return *task
 		}
 	}
@@ -52,38 +50,38 @@ func (scheduler *scheduler) NewTask(agent string) Task {
 
 	lastTree := fmt.Sprintf("[%v]", scheduler.lastCounter)
 
-	newTask := NewTask(scheduler.lastCounter, lastTree, agent, scheduler.defaultTimeoutSec)
-	scheduler.Tasks = append(scheduler.Tasks, newTask)
+	newTask := newTask(scheduler.lastCounter, lastTree, agent, scheduler.defaultTimeoutSec)
+	scheduler.tasks = append(scheduler.tasks, newTask)
 
 	return *newTask
 }
 
-func (scheduler *scheduler) FinishTask(number uint64, solution *Solution) {
+func (scheduler *scheduler) finishTask(number uint64, solution *Solution) {
 
 	scheduler.ready.Lock()
 	defer scheduler.ready.Unlock()
 
-	for _, task := range scheduler.Tasks {
+	for _, task := range scheduler.tasks {
 		if task.Number == number {
-			task.Done()
+			task.done()
 		}
 	}
 
 	// take and report about first done tasks
-	for len(scheduler.Tasks) > 0 && (scheduler.Tasks[0].done) {
-		task := scheduler.Tasks[0]
+	for len(scheduler.tasks) > 0 && (scheduler.tasks[0].isDone()) {
+		task := scheduler.tasks[0]
 
-		scheduler.state.ReportAboutSolution(task, solution)
+		scheduler.state.reportAboutSolution(task, solution)
 
-		scheduler.Tasks = scheduler.Tasks[1:] // remove first done task
+		scheduler.tasks = scheduler.tasks[1:] // remove first done task
 	}
 
 }
 
-func (scheduler *scheduler) HTTPHandlerTask(w http.ResponseWriter, r *http.Request) {
+func (scheduler *scheduler) httpHandlerTask(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method == "GET" {
-		task := scheduler.NewTask(r.RemoteAddr)
+		task := scheduler.newTask(r.RemoteAddr)
 
 		json, err := json.Marshal(task)
 		if err != nil {
@@ -108,21 +106,21 @@ func (scheduler *scheduler) HTTPHandlerTask(w http.ResponseWriter, r *http.Reque
 			return
 		}
 
-		solution, err := NewSolutionFromString(body)
+		solution, err := newSolutionFromString(body)
 		if err != nil {
 			w.Write([]byte(err.Error()))
 			return
 		}
-		scheduler.FinishTask(number, solution)
+		scheduler.finishTask(number, solution)
 	}
 }
 
-func (scheduler *scheduler) HTTPHandlerTasks(w http.ResponseWriter, r *http.Request) {
+func (scheduler *scheduler) httpHandlerTasks(w http.ResponseWriter, r *http.Request) {
 
 	scheduler.ready.Lock()
 	defer scheduler.ready.Unlock()
 
-	json, err := json.Marshal(scheduler.Tasks)
+	json, err := json.Marshal(scheduler.tasks)
 	if err != nil {
 		w.Write([]byte(err.Error()))
 	} else {

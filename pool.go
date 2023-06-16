@@ -6,7 +6,7 @@ import (
 )
 
 type PoolTask interface {
-	Do()
+	do()
 }
 
 type Pool struct {
@@ -43,7 +43,7 @@ func (pool *Pool) Start() {
 
 				if err == nil {
 					fmt.Printf("[%v] started\n", i)
-					task.Do()
+					task.do()
 					fmt.Printf("[%v] finished\n", i)
 				}
 			}

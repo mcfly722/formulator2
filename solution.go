@@ -13,7 +13,7 @@ type Solution struct {
 	Deviation float64
 }
 
-func NewSolution(task *Task, deviation float64, text string) *Solution {
+func newSolution(task *Task, deviation float64, text string) *Solution {
 	return &Solution{
 		Number:    task.Number,
 		FoundedAt: time.Now().Format("2006-01-02 15:04:05"),
@@ -23,7 +23,7 @@ func NewSolution(task *Task, deviation float64, text string) *Solution {
 	}
 }
 
-func NewSolutionFromString(body []byte) (*Solution, error) {
+func newSolutionFromString(body []byte) (*Solution, error) {
 	var solution Solution
 
 	err := json.Unmarshal(body, &solution)

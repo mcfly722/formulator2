@@ -17,12 +17,12 @@ type Task struct {
 	lastConfirmationAt time.Time
 	timeoutAt          time.Time
 	timeoutSec         uint64
-	doneAt             time.Time
-	done               bool
+	finishedAt         time.Time
+	finished           bool
 	job                func()
 }
 
-func NewTask(number uint64, sequence string, agent string, timeoutSec uint64) *Task {
+func newTask(number uint64, sequence string, agent string, timeoutSec uint64) *Task {
 	empty := func() {}
 
 	task := Task{
@@ -33,29 +33,30 @@ func NewTask(number uint64, sequence string, agent string, timeoutSec uint64) *T
 		lastConfirmationAt: time.Time{},
 		timeoutAt:          time.Time{},
 		timeoutSec:         timeoutSec,
-		done:               false,
+		finishedAt:         time.Time{},
+		finished:           false,
 		job:                empty,
 	}
 
-	task.Reset(agent)
+	task.reset(agent)
 
 	return &task
 }
 
-func (task *Task) IsOutdated() bool {
+func (task *Task) isOutdated() bool {
 	return time.Now().After(task.timeoutAt)
 }
 
-func (task *Task) IsDone() bool {
-	return task.done
+func (task *Task) isDone() bool {
+	return task.finished
 }
 
-func (task *Task) Done() {
-	task.doneAt = time.Now()
-	task.done = true
+func (task *Task) done() {
+	task.finishedAt = time.Now()
+	task.finished = true
 }
 
-func (task *Task) Reset(agent string) {
+func (task *Task) reset(agent string) {
 	now := time.Now()
 
 	task.agent = agent
@@ -77,29 +78,34 @@ func (task *Task) MarshalJSON() ([]byte, error) {
 		Done                bool
 	}
 
+	elapsed := time.Time{}.Add(time.Since(task.startedAt)).Format("15:04:05")
+	if task.isDone() {
+		elapsed = time.Time{}.Add(task.finishedAt.Sub(task.startedAt)).Format("15:04:05")
+	}
+
 	j := jsonTask{
 		Number:              task.Number,
 		Sequence:            task.Sequence,
 		Agent:               task.agent,
 		StartedAt:           task.startedAt.Format("2006-01-02 15:04:05"),
-		Elapsed:             time.Time{}.Add(time.Since(task.startedAt)).Format("15:04:05"),
+		Elapsed:             elapsed,
 		LastConfirmationAgo: time.Time{}.Add(time.Since(task.lastConfirmationAt)).Format("15:04:05"),
 		TimeoutedOnSec:      int64(time.Since(task.lastConfirmationAt).Seconds()) - int64(task.timeoutSec),
-		Done:                task.done,
+		Done:                task.isDone(),
 	}
 
 	return json.Marshal(j)
 }
 
-func (task *Task) SetJob(job func()) {
+func (task *Task) setJob(job func()) {
 	task.job = job
 }
 
-func (task *Task) Do() {
+func (task *Task) do() {
 	task.job()
 }
 
-func NewTaskFromServer(server string, timeoutSec uint) (*Task, error) {
+func newTaskFromServer(server string, timeoutSec uint) (*Task, error) {
 
 	client := &http.Client{
 		Timeout: time.Duration(timeoutSec) * time.Second,
@@ -132,7 +138,7 @@ func NewTaskFromServer(server string, timeoutSec uint) (*Task, error) {
 	return &task, nil
 }
 
-func (task *Task) ReportToServerWhatDone(server string, timeoutSec uint, solution *Solution) error {
+func (task *Task) reportToServerWhatDone(server string, timeoutSec uint, solution *Solution) error {
 
 	client := &http.Client{
 		Timeout: time.Duration(timeoutSec) * time.Second,

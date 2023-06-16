@@ -30,7 +30,7 @@ func NewState(points []Point, fileName string, saveFirstNBestSolutions uint) *St
 	}
 }
 
-func (state *State) StartRegularSaving(intervalSec uint) {
+func (state *State) startRegularSaving(intervalSec uint) {
 	go func() {
 
 		for {
@@ -57,7 +57,7 @@ func (state *State) StartRegularSaving(intervalSec uint) {
 	}()
 }
 
-func (state *State) ReportAboutSolution(task *Task, solution *Solution) {
+func (state *State) reportAboutSolution(task *Task, solution *Solution) {
 	state.ready.Lock()
 	defer state.ready.Unlock()
 
@@ -79,7 +79,7 @@ func (state *State) ReportAboutSolution(task *Task, solution *Solution) {
 	state.Solutions = state.Solutions[:l]
 }
 
-func IsStateFileExist(stateFile string) bool {
+func isStateFileExist(stateFile string) bool {
 	if _, err := os.Stat(stateFile); err == nil {
 		return true
 	}
@@ -87,7 +87,7 @@ func IsStateFileExist(stateFile string) bool {
 	return false
 }
 
-func LoadStateFromFile(stateFile string) (*State, error) {
+func loadStateFromFile(stateFile string) (*State, error) {
 	body, err := os.ReadFile(stateFile)
 
 	if err != nil {
@@ -104,7 +104,7 @@ func LoadStateFromFile(stateFile string) (*State, error) {
 	return &state, nil
 }
 
-func (state *State) HTTPHandlerPoints(w http.ResponseWriter, r *http.Request) {
+func (state *State) httpHandlerPoints(w http.ResponseWriter, r *http.Request) {
 	state.ready.Lock()
 	defer state.ready.Unlock()
 
@@ -116,24 +116,11 @@ func (state *State) HTTPHandlerPoints(w http.ResponseWriter, r *http.Request) {
 	w.Write(json)
 }
 
-func (state *State) HTTPHandlerState(w http.ResponseWriter, r *http.Request) {
+func (state *State) httpHandlerState(w http.ResponseWriter, r *http.Request) {
 	state.ready.Lock()
 	defer state.ready.Unlock()
 
 	json, err := json.Marshal(state)
-	if err != nil {
-		w.Write([]byte(err.Error()))
-		return
-	}
-
-	w.Write(json)
-}
-
-func (state *State) HTTPHandlerSolutions(w http.ResponseWriter, r *http.Request) {
-	state.ready.Lock()
-	defer state.ready.Unlock()
-
-	json, err := json.Marshal(state.Solutions)
 	if err != nil {
 		w.Write([]byte(err.Error()))
 		return

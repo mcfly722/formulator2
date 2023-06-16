@@ -30,8 +30,8 @@ func main() {
 		var state *State
 
 		// read state or create new
-		if IsStateFileExist(*stateFile) {
-			loadedState, err := LoadStateFromFile(*stateFile)
+		if isStateFileExist(*stateFile) {
+			loadedState, err := loadStateFromFile(*stateFile)
 			if err != nil {
 				panic(err)
 			}
@@ -41,7 +41,7 @@ func main() {
 
 		} else {
 			// new state
-			points, err := LoadPointsFromFile(*samplesFile)
+			points, err := loadPointsFromFile(*samplesFile)
 			if err != nil {
 				panic(err)
 			}
@@ -51,9 +51,9 @@ func main() {
 
 		}
 
-		state.StartRegularSaving(*stateSaveIntervalSec)
+		state.startRegularSaving(*stateSaveIntervalSec)
 
-		server := NewServer(*listenAddr, NewScheduler(state, *taskTimeoutSec), state)
+		server := newServer(*listenAddr, newScheduler(state, *taskTimeoutSec), state)
 
 		fmt.Printf("starting server on %v\n", *listenAddr)
 
@@ -66,7 +66,7 @@ func main() {
 
 		taskReceiver := func() (PoolTask, error) {
 
-			task, err := NewTaskFromServer(*serverAddr, *agentRequestTimeoutSec)
+			task, err := newTaskFromServer(*serverAddr, *agentRequestTimeoutSec)
 
 			if err != nil {
 				fmt.Println(err)
@@ -74,14 +74,14 @@ func main() {
 				return nil, err
 			}
 
-			task.SetJob(func() {
+			task.setJob(func() {
 				// sleep random pause
 				time.Sleep(time.Duration(rand.Intn(8)) * time.Second)
 
-				solution := NewSolution(task, rand.Float64()*10000, "text representation...")
+				solution := newSolution(task, rand.Float64()*10000, "text representation...")
 
 				// report to server as done
-				err := task.ReportToServerWhatDone(*serverAddr, *agentRequestTimeoutSec, solution)
+				err := task.reportToServerWhatDone(*serverAddr, *agentRequestTimeoutSec, solution)
 				if err != nil {
 					fmt.Println(err)
 				}

@@ -79,6 +79,13 @@ export default class TasksList extends Component {
             return dataNormalStyle
         }
 
+        function taskDoneValue(task, done, value) {
+            if (task.Done) {
+                return done
+            }
+            return value
+        }
+
         function axiosError2Text(error) {
             return JSON.stringify({
                 code: error.code,
@@ -125,8 +132,8 @@ export default class TasksList extends Component {
                                     <td style={taskStyle(task)}>{task.Agent}</td>
                                     <td style={taskStyle(task)}>{task.StartedAt}</td>
                                     <td style={taskStyle(task)}>{task.Elapsed}</td>
-                                    <td style={taskStyle(task)}>{task.LastConfirmationAgo}</td>
-                                    <td style={taskStyle(task)}>{task.TimeoutedOnSec}</td>
+                                    <td style={taskStyle(task)}>{taskDoneValue(task, "done", task.LastConfirmationAgo)}</td>
+                                    <td style={taskStyle(task)}>{taskDoneValue(task, "done", task.TimeoutedOnSec)}</td>
                                 </tr>
                             ))
                         }
