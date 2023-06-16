@@ -12,6 +12,8 @@ func main() {
 
 	// server parameters
 	stateFile := flag.String("stateFile", "state.json", "file for current state")
+	stateSaveIntervalSec := flag.Uint("stateSaveIntervalSec", 5, "state save interval in secs")
+	saveFirstNBestSolutions := flag.Uint("saveFirstNBestSolutions", 5, "save first N solutions")
 	samplesFile := flag.String("samplesFile", "samples\\exponent\\exponent.json", "file of points for required function")
 	listenAddr := flag.String("listenAddr", "localhost:8080", "bind address for server")
 	taskTimeoutSec := flag.Uint64("taskTimeoutSec", 5, "tasks timeout in secs")
@@ -35,7 +37,7 @@ func main() {
 			}
 			state = loadedState
 
-			fmt.Printf("previous state founded and loaded from %v", *stateFile)
+			fmt.Printf("previous state founded and loaded from %v\n", *stateFile)
 
 		} else {
 			// new state
@@ -44,11 +46,14 @@ func main() {
 				panic(err)
 			}
 
-			state = NewState(points)
+			state = NewState(points, *stateFile, *saveFirstNBestSolutions)
 			fmt.Printf("new state created. Loaded %v sample points from %v\n", len(state.Points), *stateFile)
+
 		}
 
-		server := NewServer(*listenAddr, NewScheduler(state, *taskTimeoutSec))
+		state.StartRegularSaving(*stateSaveIntervalSec)
+
+		server := NewServer(*listenAddr, NewScheduler(state, *taskTimeoutSec), state)
 
 		fmt.Printf("starting server on %v\n", *listenAddr)
 
@@ -73,8 +78,10 @@ func main() {
 				// sleep random pause
 				time.Sleep(time.Duration(rand.Intn(8)) * time.Second)
 
+				solution := NewSolution(task, rand.Float64()*10000, "text representation...")
+
 				// report to server as done
-				err := task.ReportToServerWhatDone(*serverAddr, *agentRequestTimeoutSec)
+				err := task.ReportToServerWhatDone(*serverAddr, *agentRequestTimeoutSec, solution)
 				if err != nil {
 					fmt.Println(err)
 				}

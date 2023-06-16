@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -16,6 +17,7 @@ type Task struct {
 	lastConfirmationAt time.Time
 	timeoutAt          time.Time
 	timeoutSec         uint64
+	doneAt             time.Time
 	done               bool
 	job                func()
 }
@@ -49,6 +51,7 @@ func (task *Task) IsDone() bool {
 }
 
 func (task *Task) Done() {
+	task.doneAt = time.Now()
 	task.done = true
 }
 
@@ -129,12 +132,18 @@ func NewTaskFromServer(server string, timeoutSec uint) (*Task, error) {
 	return &task, nil
 }
 
-func (task *Task) ReportToServerWhatDone(server string, timeoutSec uint) error {
+func (task *Task) ReportToServerWhatDone(server string, timeoutSec uint, solution *Solution) error {
+
 	client := &http.Client{
 		Timeout: time.Duration(timeoutSec) * time.Second,
 	}
 
-	request, err := http.NewRequest("DELETE", fmt.Sprintf("%v/api/task/%v", server, task.Number), nil)
+	solutionJSON, err := json.Marshal(solution)
+	if err != nil {
+		return err
+	}
+
+	request, err := http.NewRequest("DELETE", fmt.Sprintf("%v/api/task/%v", server, task.Number), bytes.NewBuffer(solutionJSON))
 	if err != nil {
 		return err
 	}

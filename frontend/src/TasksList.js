@@ -1,10 +1,9 @@
 import React, { Component } from "react";
 import axios from "axios";
-import { Header } from "semantic-ui-react";
 
 let endpoint = window.location.href;
 
-class TasksList extends Component {
+export default class TasksList extends Component {
     constructor(props) {
         super(props);
 
@@ -40,32 +39,38 @@ class TasksList extends Component {
         const headerStyle = {
             padding: "10px",
             backgroundColor: "#DADBDD",
-            fontFamily: "monospace"
+            fontFamily: "monospace",
+            fontSize: 15
         }
 
         const dataNormalStyle = {
             paddingRight: "10px",
             paddingLeft: "10px",
-            fontFamily: "monospace"
+            fontFamily: "monospace",
+            fontSize: 14
         }
 
         const dataOutdatedStyle = {
             paddingRight: "10px",
             paddingLeft: "10px",
             fontFamily: "monospace",
-            backgroundColor: "#FF6347"
+            backgroundColor: "#FF6347",
+            fontSize: 14
         }
 
         const dataDoneStyle = {
             paddingRight: "10px",
             paddingLeft: "10px",
             fontFamily: "monospace",
-            backgroundColor: "#50C878"
+            backgroundColor: "#50C878",
+            fontSize: 14
         }
 
         const errorStyle = {
             fontFamily: "monospace",
-            color: "red"
+            fontWeight: 1,
+            color: "red",
+            fontSize: 15
         }
 
         function taskStyle(task) {
@@ -96,9 +101,9 @@ class TasksList extends Component {
 
         return (
             <div>
-                <Header className="header" as="h2" color="blue">
+                <h2>
                     Tasks List:
-                </Header>
+                </h2>
                 <table border="1px" style={{ "borderCollapse": "collapse" }}>
                     <thead >
                         <tr >
@@ -132,5 +137,3 @@ class TasksList extends Component {
         );
     }
 }
-
-export default TasksList;
