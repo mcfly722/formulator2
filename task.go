@@ -60,8 +60,6 @@ func (task *Task) Reset(agent string) {
 	task.startedAt = now
 	task.lastConfirmationAt = now
 	task.timeoutAt = now.Add(time.Duration(task.timeoutSec) * time.Second)
-
-	fmt.Println(task)
 }
 
 func (task *Task) MarshalJSON() ([]byte, error) {

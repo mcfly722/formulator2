@@ -57,10 +57,12 @@ func main() {
 		}
 
 	} else {
-		fmt.Printf("starting agent")
+		fmt.Printf("starting agent\n")
 
 		taskReceiver := func() (PoolTask, error) {
+
 			task, err := NewTaskFromServer(*serverAddr, *agentRequestTimeoutSec)
+
 			if err != nil {
 				fmt.Println(err)
 				time.Sleep(time.Duration(*agentErrorSleepSec) * time.Second)
