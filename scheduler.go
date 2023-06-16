@@ -4,7 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 	"sync"
+
+	"github.com/gorilla/mux"
 )
 
 type scheduler struct {
@@ -35,7 +38,7 @@ func (scheduler *scheduler) NewTask(agent string) Task {
 
 	// search and return first outdated
 	for _, task := range scheduler.Tasks {
-		if task.IsOutdated() {
+		if task.IsOutdated() && !task.IsDone() {
 			task.Reset(agent)
 			return *task
 		}
@@ -53,14 +56,38 @@ func (scheduler *scheduler) NewTask(agent string) Task {
 	return *newTask
 }
 
-func (scheduler *scheduler) HTTPHandlerNewTask(w http.ResponseWriter, r *http.Request) {
-	task := scheduler.NewTask(r.RemoteAddr)
+func (scheduler *scheduler) FinishTask(number uint64) {
 
-	json, err := json.Marshal(task)
-	if err != nil {
-		w.Write([]byte(err.Error()))
-	} else {
-		w.Write(json)
+	scheduler.ready.Lock()
+	defer scheduler.ready.Unlock()
+
+	for _, task := range scheduler.Tasks {
+		if task.Number == number {
+			task.Done()
+		}
+	}
+
+}
+
+func (scheduler *scheduler) HTTPHandlerTask(w http.ResponseWriter, r *http.Request) {
+
+	if r.Method == "GET" {
+		task := scheduler.NewTask(r.RemoteAddr)
+
+		json, err := json.Marshal(task)
+		if err != nil {
+			w.Write([]byte(err.Error()))
+		} else {
+			w.Write(json)
+		}
+	}
+
+	if r.Method == "DELETE" {
+		vars := mux.Vars(r)
+		number, err := strconv.ParseUint(vars["id"], 10, 64)
+		if err == nil {
+			scheduler.FinishTask(number)
+		}
 	}
 }
 
@@ -75,4 +102,5 @@ func (scheduler *scheduler) HTTPHandlerTasks(w http.ResponseWriter, r *http.Requ
 	} else {
 		w.Write(json)
 	}
+
 }

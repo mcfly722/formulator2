@@ -21,8 +21,9 @@ func NewServer(listenAddr string, scheduler *scheduler) *server {
 
 func (server *server) start(bindAddr string) error {
 
-	server.router.HandleFunc("/api/points", server.scheduler.state.HTTPHandlerPoints)
-	server.router.HandleFunc("/api/tasks", server.scheduler.HTTPHandlerTasks)
-	server.router.HandleFunc("/api/task/new", server.scheduler.HTTPHandlerNewTask)
+	server.router.HandleFunc("/api/points", server.scheduler.state.HTTPHandlerPoints).Methods("GET")
+	server.router.HandleFunc("/api/tasks", server.scheduler.HTTPHandlerTasks).Methods("GET")
+	server.router.HandleFunc("/api/task/{id}", server.scheduler.HTTPHandlerTask).Methods("GET", "DELETE")
+
 	return http.ListenAndServe(bindAddr, server.router)
 }

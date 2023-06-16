@@ -62,6 +62,7 @@ class TasksList extends Component {
         }
 
         function taskStyle(task) {
+            if (task.Done === true) { return dataDoneStyle }
             if (task.TimeoutedOnSec > 0) { return dataOutdatedStyle }
             return dataNormalStyle
         }
