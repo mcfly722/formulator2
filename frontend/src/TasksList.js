@@ -1,6 +1,6 @@
-import React, { Component, useEffect, useState } from "react";
+import React, { Component } from "react";
 import axios from "axios";
-import { Card, Header, Form, Input, Icon } from "semantic-ui-react";
+import { Header } from "semantic-ui-react";
 
 let endpoint = window.location.href;
 
@@ -9,7 +9,8 @@ class TasksList extends Component {
         super(props);
 
         this.state = {
-            data: []
+            data: [],
+            err: null
         };
     }
 
@@ -23,17 +24,15 @@ class TasksList extends Component {
         clearInterval(this.interval);
     }
 
-
-
-    onChange = (event) => { this.setState({ [event.target.name]: event.target.value }) }
-
     GetTasks = () => {
         axios.get(endpoint + "api/tasks").then((res) => {
             if (res.data) {
-                this.setState({ data: res.data })
+                this.setState({ data: res.data, err: null })
                 //console.log(res.data)
             }
-        })
+        }).catch(error => {
+            this.setState({ data: [], err: error })
+        });
     }
 
     render() {
@@ -52,13 +51,18 @@ class TasksList extends Component {
         const dataOutdatedStyle = {
             padding: "10px",
             fontFamily: "monospace",
-            backgroundColor: "#FF6347",
+            backgroundColor: "#FF6347"
         }
 
         const dataDoneStyle = {
             padding: "10px",
             fontFamily: "monospace",
-            backgroundColor: "#50C878",
+            backgroundColor: "#50C878"
+        }
+
+        const errorStyle = {
+            fontFamily: "monospace",
+            color: "red"
         }
 
         function taskStyle(task) {
@@ -66,6 +70,26 @@ class TasksList extends Component {
             if (task.TimeoutedOnSec > 0) { return dataOutdatedStyle }
             return dataNormalStyle
         }
+
+        function axiosError2Text(error) {
+            return JSON.stringify({
+                code: error.code,
+                data: error.response.data,
+                message: error.message,
+                status: error.response.status,
+                statusText: error.response.statusText
+            }, null, 4)
+        }
+
+
+        if (this.state.err !== null) {
+            return (
+                <div>
+                    <p style={errorStyle}><pre>{axiosError2Text(this.state.err)}</pre></p>
+                </div >
+            )
+        }
+
 
         return (
             <div>
