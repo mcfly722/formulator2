@@ -16,7 +16,7 @@ class NewTaskButton extends Component {
             if (res.data) {
                 console.log(res.data)
             }
-        })
+        }).catch(error => { });
     }
 
     render() {

@@ -44,18 +44,21 @@ class TasksList extends Component {
         }
 
         const dataNormalStyle = {
-            padding: "10px",
+            paddingRight: "10px",
+            paddingLeft: "10px",
             fontFamily: "monospace"
         }
 
         const dataOutdatedStyle = {
-            padding: "10px",
+            paddingRight: "10px",
+            paddingLeft: "10px",
             fontFamily: "monospace",
             backgroundColor: "#FF6347"
         }
 
         const dataDoneStyle = {
-            padding: "10px",
+            paddingRight: "10px",
+            paddingLeft: "10px",
             fontFamily: "monospace",
             backgroundColor: "#50C878"
         }
@@ -86,7 +89,7 @@ class TasksList extends Component {
             return (
                 <div>
                     <p style={errorStyle}><pre>{axiosError2Text(this.state.err)}</pre></p>
-                </div >
+                </div>
             )
         }
 
