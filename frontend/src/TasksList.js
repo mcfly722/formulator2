@@ -124,6 +124,7 @@ export default class TasksList extends Component {
                 <table border="1px" style={{ "borderCollapse": "collapse" }}>
                     <thead >
                         <tr >
+                            <th style={headerStyle}>#</th>
                             <th style={headerStyle}>Number</th>
                             <th style={headerStyle}>Sequence</th>
                             <th style={headerStyle}>Agent</th>
@@ -137,6 +138,7 @@ export default class TasksList extends Component {
                         {
                             this.state.data.map((task, index) => (
                                 <tr key={index}>
+                                    <td style={taskStyle(task)}>{index + 1}</td>
                                     <td style={taskStyle(task)}>{task.Number}</td>
                                     <td style={taskStyle(task)}>{task.Sequence}</td>
                                     <td style={taskStyle(task)}>{task.Agent}</td>
