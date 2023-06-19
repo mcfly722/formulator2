@@ -1,35 +1,23 @@
 package main
 
 import (
-	"encoding/json"
 	"time"
 )
 
 type Solution struct {
-	Number    uint64
-	FoundedAt string
-	Sequence  string
+	FoundedAt time.Time
+	Elapsed   string
 	Text      string
 	Deviation float64
 }
 
 func newSolution(task *Task, deviation float64, text string) *Solution {
+	now := time.Now()
+
 	return &Solution{
-		Number:    task.Number,
-		FoundedAt: time.Now().Format("2006-01-02 15:04:05"),
-		Sequence:  task.Sequence,
+		FoundedAt: now,
+		Elapsed:   time.Time{}.Add(now.Sub(task.StartedAt)).Format("15:04:05"),
 		Deviation: deviation,
 		Text:      text,
 	}
-}
-
-func newSolutionFromString(body []byte) (*Solution, error) {
-	var solution Solution
-
-	err := json.Unmarshal(body, &solution)
-	if err != nil {
-		return nil, err
-	}
-
-	return &solution, nil
 }

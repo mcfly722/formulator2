@@ -14,7 +14,7 @@ type State struct {
 	FileName                string
 	Points                  []Point
 	Solutions               []Solution
-	SaveFirstNBestSolutions uint
+	saveFirstNBestSolutions uint
 	Counter                 uint64
 	LastSequence            string
 	ready                   sync.Mutex
@@ -25,7 +25,7 @@ func NewState(points []Point, fileName string, saveFirstNBestSolutions uint) *St
 		FileName:                fileName,
 		Points:                  points,
 		Solutions:               []Solution{},
-		SaveFirstNBestSolutions: saveFirstNBestSolutions,
+		saveFirstNBestSolutions: saveFirstNBestSolutions,
 		Counter:                 0,
 	}
 }
@@ -57,15 +57,17 @@ func (state *State) startRegularSaving(intervalSec uint) {
 	}()
 }
 
-func (state *State) reportAboutSolution(task *Task, solution *Solution) {
+func (state *State) reportAboutSolution(task *Task) {
 	state.ready.Lock()
 	defer state.ready.Unlock()
+
+	fmt.Printf("%v %v\n", task.Number, task.Solution.Deviation)
 
 	state.Counter++
 	state.LastSequence = task.Sequence
 
 	// not optimized insert in to sorted slice with right shift
-	state.Solutions = append(state.Solutions, *solution)
+	state.Solutions = append(state.Solutions, *task.Solution)
 
 	sort.Slice(state.Solutions, func(i, j int) bool {
 		return state.Solutions[i].Deviation < state.Solutions[j].Deviation
@@ -73,8 +75,8 @@ func (state *State) reportAboutSolution(task *Task, solution *Solution) {
 
 	// trim only first N elements from solutions slice
 	l := len(state.Solutions)
-	if l > int(state.SaveFirstNBestSolutions) {
-		l = int(state.SaveFirstNBestSolutions)
+	if l > int(state.saveFirstNBestSolutions) {
+		l = int(state.saveFirstNBestSolutions)
 	}
 	state.Solutions = state.Solutions[:l]
 }
@@ -87,7 +89,7 @@ func isStateFileExist(stateFile string) bool {
 	return false
 }
 
-func loadStateFromFile(stateFile string) (*State, error) {
+func loadStateFromFile(stateFile string, saveFirstNBestSolutions uint) (*State, error) {
 	body, err := os.ReadFile(stateFile)
 
 	if err != nil {
@@ -101,6 +103,7 @@ func loadStateFromFile(stateFile string) (*State, error) {
 		return nil, err
 	}
 
+	state.saveFirstNBestSolutions = saveFirstNBestSolutions
 	return &state, nil
 }
 

@@ -17,6 +17,9 @@ export default class BestSolutionsList extends Component {
             fontSize: 14
         }
 
+        function stringToTime(timeField) {
+            return new Date(Date.parse(timeField))
+        }
 
         if (typeof this.props.solutions === "undefined") {
             return (<div></div>)
@@ -28,22 +31,18 @@ export default class BestSolutionsList extends Component {
                 <table border="1px" style={{ "borderCollapse": "collapse", width: "900px", padding: "10px" }}>
                     <thead >
                         <tr>
-                            <th style={headerStyle}>Number</th>
-                            <th style={headerStyle}>FoundedAt</th>
-                            <th style={headerStyle}>Sequence</th>
+                            <th style={headerStyle}>Solution Text</th>
+                            <th style={headerStyle}>Founded At</th>
                             <th style={headerStyle}>Deviation</th>
-                            <th style={headerStyle}>Text</th>
                         </tr>
                     </thead>
                     <tbody>
                         {
                             this.props.solutions.map((solution, index) => (
                                 <tr key={index}>
-                                    <td style={dataNormalStyle}>{solution.Number}</td>
-                                    <td style={dataNormalStyle}>{solution.FoundedAt}</td>
-                                    <td style={dataNormalStyle}>{solution.Sequence}</td>
-                                    <td style={dataNormalStyle}>{solution.Deviation}</td>
                                     <td style={dataNormalStyle}>{solution.Text}</td>
+                                    <td style={dataNormalStyle}>{stringToTime(solution.FoundedAt).toLocaleString()}</td>
+                                    <td style={dataNormalStyle}>{solution.Deviation}</td>
                                 </tr>
                             ))
                         }

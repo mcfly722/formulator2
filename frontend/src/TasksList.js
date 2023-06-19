@@ -47,6 +47,7 @@ export default class TasksList extends Component {
             paddingRight: "10px",
             paddingLeft: "10px",
             fontFamily: "monospace",
+            backgroundColor: "#D5F5E3",
             fontSize: 14
         }
 
@@ -74,16 +75,25 @@ export default class TasksList extends Component {
         }
 
         function taskStyle(task) {
-            if (task.Done === true) { return dataDoneStyle }
-            if (task.TimeoutedOnSec > 0) { return dataOutdatedStyle }
+            if (task.Solution !== null) { return dataDoneStyle }
+            if (Date.parse(new Date()) > Date.parse(stringToTime(task.TimeoutAt))) { return dataOutdatedStyle }
             return dataNormalStyle
         }
 
         function taskDoneValue(task, done, value) {
-            if (task.Done) {
+            if (task.Solution !== null) {
                 return done
             }
             return value
+        }
+
+        function taskElapsed(task) {
+            if (task.Solution !== null) { return task.Solution.Elapsed }
+            return (new Date(Date.parse(new Date()) - Date.parse(task.StartedAt) + 60 * 1000 * (new Date()).getTimezoneOffset())).toLocaleTimeString()
+        }
+
+        function stringToTime(timeField) {
+            return new Date(Date.parse(timeField))
         }
 
         function axiosError2Text(error) {
@@ -130,8 +140,8 @@ export default class TasksList extends Component {
                                     <td style={taskStyle(task)}>{task.Number}</td>
                                     <td style={taskStyle(task)}>{task.Sequence}</td>
                                     <td style={taskStyle(task)}>{task.Agent}</td>
-                                    <td style={taskStyle(task)}>{task.StartedAt}</td>
-                                    <td style={taskStyle(task)}>{task.Elapsed}</td>
+                                    <td style={taskStyle(task)}>{(stringToTime(task.StartedAt)).toLocaleString()}</td>
+                                    <td style={taskStyle(task)}>{taskElapsed(task)}</td>
                                     <td style={taskStyle(task)}>{taskDoneValue(task, "done", task.LastConfirmationAgo)}</td>
                                     <td style={taskStyle(task)}>{taskDoneValue(task, "done", task.TimeoutedOnSec)}</td>
                                 </tr>

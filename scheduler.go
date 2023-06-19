@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"strconv"
 	"sync"
 
 	"github.com/gorilla/mux"
@@ -45,73 +44,93 @@ func (scheduler *scheduler) newTask(agent string) Task {
 	}
 
 	// if there are no outdated tasks, create new one
-
 	scheduler.lastCounter++
-
-	lastTree := fmt.Sprintf("[%v]", scheduler.lastCounter)
-
-	newTask := newTask(scheduler.lastCounter, lastTree, agent, scheduler.defaultTimeoutSec)
+	lastSequence := fmt.Sprintf("[%v]", scheduler.lastCounter)
+	newTask := newTask(scheduler.lastCounter, lastSequence, agent, scheduler.defaultTimeoutSec)
 	scheduler.tasks = append(scheduler.tasks, newTask)
 
 	return *newTask
 }
 
-func (scheduler *scheduler) finishTask(number uint64, solution *Solution) {
+func (scheduler *scheduler) finishTask(task *Task) {
 
 	scheduler.ready.Lock()
 	defer scheduler.ready.Unlock()
 
-	for _, task := range scheduler.tasks {
-		if task.Number == number {
-			task.done()
+	// mark task as done
+	for j := 0; j < len(scheduler.tasks); j++ {
+		if scheduler.tasks[j].Number == task.Number {
+			scheduler.tasks[j] = task
 		}
 	}
 
+	/*
+		fmt.Printf("BEFORE:")
+		for _, task := range scheduler.tasks {
+			fmt.Printf("%v[%v],", task.Number, task.isDone())
+		}
+		fmt.Printf("\n")
+	*/
+
 	// take and report about first done tasks
-	for len(scheduler.tasks) > 0 && (scheduler.tasks[0].isDone()) {
-		task := scheduler.tasks[0]
-
-		scheduler.state.reportAboutSolution(task, solution)
-
-		scheduler.tasks = scheduler.tasks[1:] // remove first done task
+	var i int = 0
+	for i = 0; i < len(scheduler.tasks) && scheduler.tasks[i].isDone(); i++ {
+		scheduler.state.reportAboutSolution(scheduler.tasks[i])
 	}
+
+	// remove first i done tasks
+	scheduler.tasks = scheduler.tasks[i:]
+
+	/*
+		fmt.Printf(" AFTER:")
+		for _, task := range scheduler.tasks {
+			fmt.Printf("%v[%v],", task.Number, task.isDone())
+		}
+		fmt.Printf("\n")
+	*/
 
 }
 
 func (scheduler *scheduler) httpHandlerTask(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method == "GET" {
-		task := scheduler.newTask(r.RemoteAddr)
-
-		json, err := json.Marshal(task)
-		if err != nil {
-			w.Write([]byte(err.Error()))
+		//agentName
+		vars := mux.Vars(r)
+		if agentName, found := vars["agentName"]; !found {
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write([]byte("agent name is not specified"))
 			return
+		} else {
+			task := scheduler.newTask(agentName)
+
+			json, err := json.Marshal(task)
+			if err != nil {
+				w.Write([]byte(err.Error()))
+				return
+			}
+			w.Write(json)
 		}
-		w.Write(json)
+
 	}
 
-	if r.Method == "DELETE" {
-
-		vars := mux.Vars(r)
-		number, err := strconv.ParseUint(vars["id"], 10, 64)
-		if err != nil {
-			w.Write([]byte(err.Error()))
-			return
-		}
-
+	if r.Method == "POST" {
 		body, err := io.ReadAll(r.Body)
 		if err != nil {
 			w.Write([]byte(err.Error()))
 			return
 		}
 
-		solution, err := newSolutionFromString(body)
+		var task Task
+
+		err = json.Unmarshal(body, &task)
 		if err != nil {
 			w.Write([]byte(err.Error()))
 			return
 		}
-		scheduler.finishTask(number, solution)
+
+		//fmt.Printf("->%v", string(body))
+
+		scheduler.finishTask(&task)
 	}
 }
 

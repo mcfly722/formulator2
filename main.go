@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"math/rand"
+	"os"
 	"time"
 )
 
@@ -13,13 +14,14 @@ func main() {
 	// server parameters
 	stateFile := flag.String("stateFile", "state.json", "file for current state")
 	stateSaveIntervalSec := flag.Uint("stateSaveIntervalSec", 5, "state save interval in secs")
-	saveFirstNBestSolutions := flag.Uint("saveFirstNBestSolutions", 5, "save first N solutions")
+	saveFirstNBestSolutions := flag.Uint("saveFirstNBestSolutions", 15, "save first N solutions")
 	samplesFile := flag.String("samplesFile", "samples\\exponent\\exponent.json", "file of points for required function")
 	listenAddr := flag.String("listenAddr", "localhost:8080", "bind address for server")
 	taskTimeoutSec := flag.Uint64("taskTimeoutSec", 5, "tasks timeout in secs")
 
 	// agent parameters
 	serverAddr := flag.String("serverAddr", "", "server address")
+	agentName := flag.String("agentName", "", "agent name")
 	agentThreads := flag.Uint("agentThreads", 5, "number of agent threads")
 	agentErrorSleepSec := flag.Uint("agentErrorSleep", 1, "seconds before next try after error")
 	agentRequestTimeoutSec := flag.Uint("agentRequestTimeoutSec", 5, "timeout for agent->server request")
@@ -31,7 +33,7 @@ func main() {
 
 		// read state or create new
 		if isStateFileExist(*stateFile) {
-			loadedState, err := loadStateFromFile(*stateFile)
+			loadedState, err := loadStateFromFile(*stateFile, *saveFirstNBestSolutions)
 			if err != nil {
 				panic(err)
 			}
@@ -62,35 +64,20 @@ func main() {
 		}
 
 	} else {
-		fmt.Printf("starting agent\n")
-
-		taskReceiver := func() (PoolTask, error) {
-
-			task, err := newTaskFromServer(*serverAddr, *agentRequestTimeoutSec)
-
+		if len(*agentName) == 0 {
+			hostname, err := os.Hostname()
 			if err != nil {
 				fmt.Println(err)
-				time.Sleep(time.Duration(*agentErrorSleepSec) * time.Second)
-				return nil, err
+				os.Exit(1)
 			}
-
-			task.setJob(func() {
-				// sleep random pause
-				time.Sleep(time.Duration(rand.Intn(8)) * time.Second)
-
-				solution := newSolution(task, rand.Float64()*10000, "text representation...")
-
-				// report to server as done
-				err := task.reportToServerWhatDone(*serverAddr, *agentRequestTimeoutSec, solution)
-				if err != nil {
-					fmt.Println(err)
-				}
-			})
-
-			return task, nil
+			*agentName = hostname
 		}
 
-		pool := newPool(*agentThreads, taskReceiver)
+		fmt.Printf("starting agent\n")
+
+		rand.Seed(time.Now().UnixNano())
+
+		pool := newPool(*agentName, *agentThreads, *serverAddr, *agentErrorSleepSec, *agentRequestTimeoutSec)
 		pool.Start()
 	}
 }

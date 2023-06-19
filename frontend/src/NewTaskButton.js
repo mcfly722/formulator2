@@ -11,7 +11,7 @@ export default class NewTaskButton extends Component {
 
 
     Create = () => {
-        axios.get(endpoint + "api/task/new").then((res) => {
+        axios.get(endpoint + "api/task").then((res) => {
             if (res.data) {
                 console.log(res.data)
             }
