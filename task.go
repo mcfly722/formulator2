@@ -11,14 +11,15 @@ import (
 )
 
 type Task struct {
-	Number             uint64
-	Sequence           string
-	Solution           *Solution
-	StartedAt          time.Time
-	Agent              string
-	lastConfirmationAt time.Time
-	TimeoutAt          time.Time
-	TimeoutSec         uint64
+	Number               uint64
+	Sequence             string
+	Solution             *Solution
+	StartedAt            time.Time
+	Agent                string
+	ConfirmedAt          time.Time
+	ConfirmationsCounter uint64
+	TimeoutAt            time.Time
+	TimeoutSec           uint64
 }
 
 func newTask(number uint64, sequence string, agent string, timeoutSec uint64) *Task {
@@ -26,17 +27,16 @@ func newTask(number uint64, sequence string, agent string, timeoutSec uint64) *T
 	now := time.Now()
 
 	task := Task{
-		Number:             number,
-		Sequence:           sequence,
-		Solution:           nil,
-		Agent:              agent,
-		StartedAt:          now,
-		lastConfirmationAt: now,
-		TimeoutAt:          now.Add(time.Duration(timeoutSec) * time.Second),
-		TimeoutSec:         timeoutSec,
+		Number:               number,
+		Sequence:             sequence,
+		Solution:             nil,
+		Agent:                agent,
+		StartedAt:            now,
+		ConfirmedAt:          now,
+		ConfirmationsCounter: 0,
+		TimeoutAt:            now.Add(time.Duration(timeoutSec) * time.Second),
+		TimeoutSec:           timeoutSec,
 	}
-
-	task.reset(agent)
 
 	return &task
 }
@@ -49,13 +49,19 @@ func (task *Task) isDone() bool {
 	return task.Solution != nil
 }
 
-func (task *Task) reset(agent string) {
+func (task *Task) reset(agentName string) {
 	now := time.Now()
-
-	task.Agent = agent
-
+	task.Agent = agentName
+	task.ConfirmationsCounter = 0
+	task.ConfirmedAt = now
 	task.StartedAt = now
-	task.lastConfirmationAt = now
+	task.TimeoutAt = now.Add(time.Duration(task.TimeoutSec) * time.Second)
+}
+
+func (task *Task) confirm() {
+	now := time.Now()
+	task.ConfirmedAt = now
+	task.ConfirmationsCounter++
 	task.TimeoutAt = now.Add(time.Duration(task.TimeoutSec) * time.Second)
 }
 
@@ -83,7 +89,7 @@ func newTaskFromServer(server string, agentName string, timeoutSec uint) (*Task,
 		return nil, err
 	}
 
-	//fmt.Printf("-> %v\n", string(body))
+	fmt.Printf("-> %v\n", string(body))
 
 	err = json.Unmarshal(body, &task)
 	if err != nil {
@@ -93,7 +99,7 @@ func newTaskFromServer(server string, agentName string, timeoutSec uint) (*Task,
 	return &task, nil
 }
 
-func (task *Task) reportToServerWhatDone(server string, timeoutSec uint) error {
+func (task *Task) reportToServer(server string, timeoutSec uint) error {
 
 	client := &http.Client{
 		Timeout: time.Duration(timeoutSec) * time.Second,
@@ -120,12 +126,47 @@ func (task *Task) reportToServerWhatDone(server string, timeoutSec uint) error {
 	return nil
 }
 
-func (task *Task) do() {
-	// sleep random pause
-	time.Sleep(time.Duration(rand.Intn(5)) * time.Second)
+func (task *Task) startWitness(solutions chan *Solution, submitIntervalSec uint, serverAddr string, agentRequestTimeoutSec uint) {
 
-	deviation := rand.Float64() * 1000
+	go func(task *Task, solutions chan *Solution, submitIntervalSec uint, serverAddr string, agentRequestTimeoutSec uint) {
+
+		ticker := time.NewTicker(time.Duration(submitIntervalSec) * time.Second)
+		defer ticker.Stop()
+
+		for {
+			select {
+			case <-ticker.C:
+				{
+					// report to server task execution confirmation
+					task.confirm()
+					err := task.reportToServer(serverAddr, agentRequestTimeoutSec)
+					if err != nil {
+						fmt.Printf("whitness confirmation:%v\n", err)
+					}
+				}
+			case solution := <-solutions:
+				{
+					// report to server that done
+					task.Solution = solution
+					err := task.reportToServer(serverAddr, agentRequestTimeoutSec)
+					if err != nil {
+						fmt.Printf("whitness done:%v\n", err)
+					}
+					return
+				}
+			}
+		}
+	}(task, solutions, submitIntervalSec, serverAddr, agentRequestTimeoutSec)
+
+}
+
+func (task *Task) do() *Solution {
+
+	// sleep random pause
+	time.Sleep(time.Duration(rand.Intn(12)) * time.Second)
+
+	deviation := rand.Float64() * 10000
 	//fmt.Printf("%v %v done...\n", task.Number, deviation)
 
-	task.Solution = newSolution(task, deviation, fmt.Sprintf("[%v] sequence=%v", task.Number, task.Sequence))
+	return newSolution(task, deviation, fmt.Sprintf("[%v] sequence=%v", task.Number, task.Sequence))
 }

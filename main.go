@@ -24,7 +24,8 @@ func main() {
 	agentName := flag.String("agentName", "", "agent name")
 	agentThreads := flag.Uint("agentThreads", 5, "number of agent threads")
 	agentErrorSleepSec := flag.Uint("agentErrorSleep", 1, "seconds before next try after error")
-	agentRequestTimeoutSec := flag.Uint("agentRequestTimeoutSec", 5, "timeout for agent->server request")
+	agentRequestTimeoutSec := flag.Uint("agentRequestTimeoutSec", 12, "timeout for agent->server request")
+	taskSubmitIntervalSec := flag.Uint("taskSubmitIntervalSec", 5, "submit task execution from agent to server")
 
 	flag.Parse()
 
@@ -77,7 +78,7 @@ func main() {
 
 		rand.Seed(time.Now().UnixNano())
 
-		pool := newPool(*agentName, *agentThreads, *serverAddr, *agentErrorSleepSec, *agentRequestTimeoutSec)
+		pool := newPool(*agentName, *agentThreads, *serverAddr, *agentErrorSleepSec, *agentRequestTimeoutSec, *taskSubmitIntervalSec)
 		pool.Start()
 	}
 }

@@ -27,7 +27,7 @@ export default class TasksList extends Component {
         axios.get(endpoint + "api/tasks").then((res) => {
             if (res.data) {
                 this.setState({ data: res.data, err: null })
-                //console.log(res.data)
+                console.log(res.data)
             }
         }).catch(error => {
             this.setState({ data: [], err: error })
@@ -87,9 +87,30 @@ export default class TasksList extends Component {
             return value
         }
 
+        function datesDiffToString(bigger, lower) {
+            var biggerNumber = Date.parse(bigger)
+            var lowerNumber = Date.parse(lower)
+            if (lowerNumber > biggerNumber) { return "00:00:00" }
+            return (new Date(biggerNumber - lowerNumber)).toISOString().split('T')[1].split('.')[0]
+        }
+
         function taskElapsed(task) {
-            if (task.Solution !== null) { return task.Solution.Elapsed }
-            return (new Date(Date.parse(new Date()) - Date.parse(task.StartedAt) + 60 * 1000 * (new Date()).getTimezoneOffset())).toLocaleTimeString()
+            if (task.Solution !== null) {
+                return datesDiffToString(task.Solution.FoundedAt, task.StartedAt)
+            }
+            return datesDiffToString(new Date(), task.StartedAt)
+        }
+
+        function taskConfirmed(task) {
+            if (task.Solution !== null) { return "done" }
+            return datesDiffToString(new Date(), task.ConfirmedAt)
+        }
+
+        function taskTimeoutedOn(task) {
+            if (task.Solution !== null) { return "done" }
+            if (Date.parse(new Date()) > Date.parse(stringToTime(task.TimeoutAt))) {
+                return datesDiffToString(new Date(), task.TimeoutAt)
+            }
         }
 
         function stringToTime(timeField) {
@@ -122,16 +143,17 @@ export default class TasksList extends Component {
                     Tasks List:
                 </h2>
                 <table border="1px" style={{ "borderCollapse": "collapse" }}>
-                    <thead >
-                        <tr >
+                    <thead>
+                        <tr>
                             <th style={headerStyle}>#</th>
                             <th style={headerStyle}>Number</th>
                             <th style={headerStyle}>Sequence</th>
                             <th style={headerStyle}>Agent</th>
                             <th style={headerStyle}>Started At</th>
                             <th style={headerStyle}>Elapsed</th>
-                            <th style={headerStyle}>Confirmation</th>
-                            <th style={headerStyle}>Timeouted On (Sec)</th>
+                            <th style={headerStyle}>Confirmed Ago</th>
+                            <th style={headerStyle}>Confirm Count</th>
+                            <th style={headerStyle}>Timeouted On</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -144,8 +166,9 @@ export default class TasksList extends Component {
                                     <td style={taskStyle(task)}>{task.Agent}</td>
                                     <td style={taskStyle(task)}>{(stringToTime(task.StartedAt)).toLocaleString()}</td>
                                     <td style={taskStyle(task)}>{taskElapsed(task)}</td>
-                                    <td style={taskStyle(task)}>{taskDoneValue(task, "done", task.LastConfirmationAgo)}</td>
-                                    <td style={taskStyle(task)}>{taskDoneValue(task, "done", task.TimeoutedOnSec)}</td>
+                                    <td style={taskStyle(task)}>{taskConfirmed(task)}</td>
+                                    <td style={taskStyle(task)}>{task.ConfirmationsCounter}</td>
+                                    <td style={taskStyle(task)}>{taskTimeoutedOn(task)}</td>
                                 </tr>
                             ))
                         }

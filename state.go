@@ -61,7 +61,7 @@ func (state *State) reportAboutSolution(task *Task) {
 	state.ready.Lock()
 	defer state.ready.Unlock()
 
-	fmt.Printf("%v %v\n", task.Number, task.Solution.Deviation)
+	fmt.Printf("[%v] %v\n", task.Number, task.Solution.toJSONString())
 
 	state.Counter++
 	state.LastSequence = task.Sequence

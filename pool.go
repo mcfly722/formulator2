@@ -12,17 +12,19 @@ type Pool struct {
 	agentName              string
 	agentRequestTimeoutSec uint
 	agentErrorSleepSec     uint
+	submitIntervalSec      uint
 	wg                     sync.WaitGroup
 	ready                  sync.Mutex
 }
 
-func newPool(agentName string, threads uint, serverAddr string, agentRequestTimeoutSec uint, agentErrorSleepSec uint) *Pool {
+func newPool(agentName string, threads uint, serverAddr string, agentRequestTimeoutSec uint, agentErrorSleepSec uint, submitIntervalSec uint) *Pool {
 	return &Pool{
 		threads:                int(threads),
 		serverAddr:             serverAddr,
 		agentName:              agentName,
 		agentRequestTimeoutSec: agentRequestTimeoutSec,
 		agentErrorSleepSec:     agentErrorSleepSec,
+		submitIntervalSec:      submitIntervalSec,
 	}
 }
 
@@ -33,7 +35,9 @@ func (pool *Pool) Start() {
 		// start goroutine from pool
 		go func(threadNumber int) {
 			defer pool.wg.Done()
-			fmt.Printf("thread %v started\n", threadNumber)
+			fmt.Printf("thread %v started\n", 1+threadNumber)
+
+			solutions := make(chan *Solution)
 
 			for {
 				// get next task
@@ -47,13 +51,9 @@ func (pool *Pool) Start() {
 				} else {
 					//fmt.Printf("[%v] obtained\n", task.Number)
 
-					task.do()
+					task.startWitness(solutions, pool.submitIntervalSec, pool.serverAddr, pool.agentRequestTimeoutSec)
 
-					// report to server that done
-					err := task.reportToServerWhatDone(pool.serverAddr, pool.agentRequestTimeoutSec)
-					if err != nil {
-						fmt.Printf("[%v] reportToServerWhatDone:%v\n", threadNumber, err)
-					}
+					solutions <- task.do()
 
 					//fmt.Printf("[%v] reported about done task #%v\n", threadNumber, task.Number)
 				}

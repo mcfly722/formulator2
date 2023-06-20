@@ -119,18 +119,25 @@ func (scheduler *scheduler) httpHandlerTask(w http.ResponseWriter, r *http.Reque
 			w.Write([]byte(err.Error()))
 			return
 		}
+		//fmt.Printf("->%v", string(body))
 
-		var task Task
+		var obtainedTask Task
 
-		err = json.Unmarshal(body, &task)
+		err = json.Unmarshal(body, &obtainedTask)
 		if err != nil {
 			w.Write([]byte(err.Error()))
 			return
 		}
 
-		//fmt.Printf("->%v", string(body))
+		for i, task := range scheduler.tasks {
+			if task.Number == obtainedTask.Number {
+				scheduler.tasks[i] = &obtainedTask
+			}
+		}
 
-		scheduler.finishTask(&task)
+		if obtainedTask.Solution != nil {
+			scheduler.finishTask(&obtainedTask)
+		} //else {fmt.Printf("%v confirmed %v times\n", obtainedTask.Number, obtainedTask.ConfirmationsCounter)}
 	}
 }
 
