@@ -27,7 +27,7 @@ export default class TasksList extends Component {
         axios.get(endpoint + "api/tasks").then((res) => {
             if (res.data) {
                 this.setState({ data: res.data, err: null })
-                console.log(res.data)
+                //console.log(res.data)
             }
         }).catch(error => {
             this.setState({ data: [], err: error })
@@ -80,13 +80,6 @@ export default class TasksList extends Component {
             return dataNormalStyle
         }
 
-        function taskDoneValue(task, done, value) {
-            if (task.Solution !== null) {
-                return done
-            }
-            return value
-        }
-
         function datesDiffToString(bigger, lower) {
             var biggerNumber = Date.parse(bigger)
             var lowerNumber = Date.parse(lower)
@@ -103,7 +96,10 @@ export default class TasksList extends Component {
 
         function taskConfirmed(task) {
             if (task.Solution !== null) { return "done" }
-            return datesDiffToString(new Date(), task.ConfirmedAt)
+            if (task.ConfirmationsCounter > 0) {
+                return datesDiffToString(new Date(), task.ConfirmedAt)
+            }
+            return ""
         }
 
         function taskTimeoutedOn(task) {
@@ -151,9 +147,10 @@ export default class TasksList extends Component {
                             <th style={headerStyle}>Agent</th>
                             <th style={headerStyle}>Started At</th>
                             <th style={headerStyle}>Elapsed</th>
-                            <th style={headerStyle}>Confirmed Ago</th>
-                            <th style={headerStyle}>Confirm Count</th>
-                            <th style={headerStyle}>Timeouted On</th>
+                            <th style={headerStyle}>Confirmed<br />Ago</th>
+                            <th style={headerStyle}>Confirm<br />Count</th>
+                            <th style={headerStyle}>Timeout<br />(Sec)</th>
+                            <th style={headerStyle}>Timeouted<br />On</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -168,6 +165,7 @@ export default class TasksList extends Component {
                                     <td style={taskStyle(task)}>{taskElapsed(task)}</td>
                                     <td style={taskStyle(task)}>{taskConfirmed(task)}</td>
                                     <td style={taskStyle(task)}>{task.ConfirmationsCounter}</td>
+                                    <td style={taskStyle(task)}>{task.TimeoutSec}</td>
                                     <td style={taskStyle(task)}>{taskTimeoutedOn(task)}</td>
                                 </tr>
                             ))
