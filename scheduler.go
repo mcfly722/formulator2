@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/formulator2/step1/zeroOneTwoTree"
+	combinator "github.com/formulator2/combinator/combinator"
 	"github.com/gorilla/mux"
 )
 
@@ -45,7 +45,7 @@ func (scheduler *scheduler) newTask(agent string) Task {
 
 	// if there are no outdated tasks, iterate sequence and create create new one task
 	scheduler.lastCounter++
-	nextSequence, err := zeroOneTwoTree.GetNextBracketsSequence(scheduler.lastSequence, 2)
+	nextSequence, err := combinator.GetNextBracketsSequence(scheduler.lastSequence, 2)
 	if err != nil {
 		panic(err.Error())
 	}
