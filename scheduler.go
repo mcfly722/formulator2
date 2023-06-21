@@ -2,11 +2,11 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 	"sync"
 
+	"github.com/formulator2/step1/zeroOneTwoTree"
 	"github.com/gorilla/mux"
 )
 
@@ -43,10 +43,15 @@ func (scheduler *scheduler) newTask(agent string) Task {
 		}
 	}
 
-	// if there are no outdated tasks, create new one
+	// if there are no outdated tasks, iterate sequence and create create new one task
 	scheduler.lastCounter++
-	lastSequence := fmt.Sprintf("[%v]", scheduler.lastCounter)
-	newTask := newTask(scheduler.lastCounter, lastSequence, agent, scheduler.defaultTimeoutSec)
+	nextSequence, err := zeroOneTwoTree.GetNextBracketsSequence(scheduler.lastSequence, 2)
+	if err != nil {
+		panic(err.Error())
+	}
+	scheduler.lastSequence = nextSequence
+
+	newTask := newTask(scheduler.lastCounter, nextSequence, agent, scheduler.defaultTimeoutSec)
 	scheduler.tasks = append(scheduler.tasks, newTask)
 
 	return *newTask
