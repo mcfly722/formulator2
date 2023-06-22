@@ -1,10 +1,10 @@
-package combinator
+package explorer
 
 import (
 	"encoding/json"
 	"testing"
 
-	zeroOneTwoTree "github.com/formulator2/combinator/step1/zeroOneTwoTree"
+	zeroOneTwoTree "github.com/formulator2/explorer/step1/zeroOneTwoTree"
 )
 
 func Test_Combinator(t *testing.T) {
