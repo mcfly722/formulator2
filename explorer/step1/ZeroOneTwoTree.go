@@ -255,11 +255,11 @@ func (treeRoot *Node) MaxChilds() int {
 	return max
 }
 
-func (treeRoot *Node) TreeToJSON() string {
+func (treeRoot *Node) TreeToJSON() []byte {
 	json, err := json.MarshalIndent(treeRoot, "", "   ")
 	if err != nil {
 		panic(err)
 	}
 
-	return string(json)
+	return json
 }

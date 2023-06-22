@@ -193,7 +193,7 @@ func Test_TreeToJSON(t *testing.T) {
 		t.Errorf(err.Error())
 	}
 
-	t.Logf(root.TreeToJSON())
+	t.Logf(string(root.TreeToJSON()))
 }
 
 // go test -bench .
