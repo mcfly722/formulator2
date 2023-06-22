@@ -7,7 +7,7 @@ import (
 	zeroOneTwoTree "github.com/formulator2/explorer/step1/zeroOneTwoTree"
 )
 
-func Test_Combinator(t *testing.T) {
+func Test_GetNextBracketsSequence(t *testing.T) {
 
 	sequence, err := GetNextBracketsSequence("()", 2)
 	if err != nil {
