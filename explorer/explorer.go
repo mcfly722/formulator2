@@ -22,6 +22,8 @@ func SearchSolution(bracketsSequence string, deviationThreshold float64) (float6
 		return 0, "", nil
 	}
 
+	node.Fill()
+
 	js := node.TreeToJSON()
 	return 0, string(js), nil
 }
