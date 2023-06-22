@@ -144,6 +144,8 @@ export default class TasksList extends Component {
                             <th style={headerStyle}>#</th>
                             <th style={headerStyle}>Number</th>
                             <th style={headerStyle}>Sequence</th>
+                            <th style={headerStyle}>Deviation<br />threshold</th>
+
                             <th style={headerStyle}>Agent</th>
                             <th style={headerStyle}>Started At</th>
                             <th style={headerStyle}>Elapsed</th>
@@ -160,6 +162,7 @@ export default class TasksList extends Component {
                                     <td style={taskStyle(task)}>{index + 1}</td>
                                     <td style={taskStyle(task)}>{task.Number}</td>
                                     <td style={taskStyle(task)}>{task.Sequence}</td>
+                                    <td style={taskStyle(task)}>{task.DeviationThreshold}</td>
                                     <td style={taskStyle(task)}>{task.Agent}</td>
                                     <td style={taskStyle(task)}>{(stringToTime(task.StartedAt)).toLocaleString()}</td>
                                     <td style={taskStyle(task)}>{taskElapsed(task)}</td>
