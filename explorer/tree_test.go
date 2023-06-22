@@ -35,7 +35,8 @@ func Test_GetAllSubFunctions0(t *testing.T) {
 		t.Fatal(err.Error())
 	}
 
-	node.Fill()
+	node.FillFunctions()
+	node.FillRecombinationWeights()
 
 	//t.Logf(string(node.TreeToJSON()))
 

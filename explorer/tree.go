@@ -34,6 +34,12 @@ func (pi *Pi) Calculate(childs []*Node) float64 { return math.Pi }
 func (pi *Pi) ToString(childs []*Node) string   { return "pi" }
 func (pi *Pi) MarshalJSON() ([]byte, error)     { return json.Marshal("pi") }
 
+type Phi struct{}
+
+func (phi *Phi) Calculate(childs []*Node) float64 { return math.Phi }
+func (phi *Phi) ToString(childs []*Node) string   { return "phi" }
+func (phi *Phi) MarshalJSON() ([]byte, error)     { return json.Marshal("phi") }
+
 type One struct{}
 
 func (one *One) Calculate(childs []*Node) float64 { return 1 }
@@ -71,11 +77,11 @@ func (multiply *Multiply) ToString(childs []*Node) string {
 }
 func (multiply *Multiply) MarshalJSON() ([]byte, error) { return json.Marshal("*") }
 
-func (node *Node) Fill() uint64 {
+func (node *Node) FillFunctions() uint64 {
 
 	switch len(node.Childs) {
 	case 0:
-		node.RecombineFunctions = []Function{&E{}, &Pi{}, &One{}}
+		node.RecombineFunctions = []Function{&E{}, &Pi{}, &Phi{}, &One{}}
 	case 1:
 		node.RecombineFunctions = []Function{&Invert{}, &Round{}}
 	case 2:
@@ -87,7 +93,20 @@ func (node *Node) Fill() uint64 {
 	summaryWeigth := (uint64)(len(node.RecombineFunctions))
 
 	for _, child := range node.Childs {
-		weigth := child.Fill()
+		weigth := child.FillFunctions()
+		summaryWeigth *= weigth
+	}
+
+	node.RecombineWeight = summaryWeigth
+	return node.RecombineWeight
+}
+
+func (node *Node) FillRecombinationWeights() uint64 {
+
+	summaryWeigth := (uint64)(len(node.RecombineFunctions))
+
+	for _, child := range node.Childs {
+		weigth := child.FillRecombinationWeights()
 		summaryWeigth *= weigth
 	}
 

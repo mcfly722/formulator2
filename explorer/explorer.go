@@ -22,7 +22,8 @@ func SearchSolution(bracketsSequence string, deviationThreshold float64) (float6
 		return 0, "", nil
 	}
 
-	node.Fill()
+	node.FillFunctions()
+	node.FillRecombinationWeights()
 
 	return 0, string(node.TreeToJSON()), nil
 }
