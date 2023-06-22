@@ -187,6 +187,15 @@ func Test_BracketsToTree7(t *testing.T) {
 	testBracketsToTree(t, "(())(())")
 }
 
+func Test_TreeToJSON(t *testing.T) {
+	root, err := BracketsToTree("()((())())((()((())())))")
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+
+	t.Logf(root.TreeToJSON())
+}
+
 // go test -bench .
 
 func BenchmarkGetNextBracketsSequenceForTwo(b *testing.B) {

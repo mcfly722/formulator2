@@ -1,6 +1,7 @@
 package zeroOneTwoTree
 
 import (
+	"encoding/json"
 	"fmt"
 )
 
@@ -252,4 +253,13 @@ func (treeRoot *Node) MaxChilds() int {
 	}
 
 	return max
+}
+
+func (treeRoot *Node) TreeToJSON() string {
+	json, err := json.MarshalIndent(treeRoot, "", "   ")
+	if err != nil {
+		panic(err)
+	}
+
+	return string(json)
 }
