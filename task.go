@@ -14,6 +14,7 @@ type Task struct {
 	Number               uint64
 	Sequence             string
 	Solution             *Solution
+	DeviationThreshold   float64
 	StartedAt            time.Time
 	Agent                string
 	ConfirmedAt          time.Time
@@ -22,7 +23,7 @@ type Task struct {
 	TimeoutSec           uint64
 }
 
-func newTask(number uint64, sequence string, agent string, timeoutSec uint64) *Task {
+func newTask(number uint64, sequence string, deviationThreshold float64, agent string, timeoutSec uint64) *Task {
 
 	now := time.Now()
 
@@ -30,6 +31,7 @@ func newTask(number uint64, sequence string, agent string, timeoutSec uint64) *T
 		Number:               number,
 		Sequence:             sequence,
 		Solution:             nil,
+		DeviationThreshold:   deviationThreshold,
 		Agent:                agent,
 		StartedAt:            now,
 		ConfirmedAt:          now,

@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"math"
 	"net/http"
 	"os"
 	"sort"
@@ -28,6 +29,20 @@ func NewState(points []Point, fileName string, saveFirstNBestSolutions uint) *St
 		saveFirstNBestSolutions: saveFirstNBestSolutions,
 		Counter:                 0,
 	}
+}
+
+func (state *State) getDeviationThreshold() float64 {
+	state.ready.Lock()
+	defer state.ready.Unlock()
+
+	// if there are no solutions found yet, return max possible
+	if len(state.Solutions) == 0 {
+		return math.MaxFloat64
+	}
+
+	// return max deviation from all registered solutions
+	i := len(state.Solutions) - 1
+	return state.Solutions[i].Deviation
 }
 
 func (state *State) startRegularSaving(intervalSec uint) {

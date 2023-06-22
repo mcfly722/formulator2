@@ -51,7 +51,7 @@ func (scheduler *scheduler) newTask(agent string) Task {
 	}
 	scheduler.lastSequence = nextSequence
 
-	newTask := newTask(scheduler.lastCounter, nextSequence, agent, scheduler.defaultTimeoutSec)
+	newTask := newTask(scheduler.lastCounter, nextSequence, scheduler.state.getDeviationThreshold(), agent, scheduler.defaultTimeoutSec)
 	scheduler.tasks = append(scheduler.tasks, newTask)
 
 	return *newTask
