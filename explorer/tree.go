@@ -114,3 +114,16 @@ func (node *Node) TreeToJSON() string {
 
 	return string(json)
 }
+
+func (node *Node) GetAllSubFunctions0() []*Node {
+	if len(node.Childs) == 0 {
+		return []*Node{node}
+	}
+
+	childs := []*Node{}
+	for _, child := range node.Childs {
+		childs = append(childs, child.GetAllSubFunctions0()...)
+	}
+
+	return childs
+}

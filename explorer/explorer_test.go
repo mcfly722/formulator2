@@ -1,10 +1,7 @@
 package explorer
 
 import (
-	"encoding/json"
 	"testing"
-
-	zeroOneTwoTree "github.com/formulator2/explorer/step1/zeroOneTwoTree"
 )
 
 func Test_GetNextBracketsSequence(t *testing.T) {
@@ -19,21 +16,6 @@ func Test_GetNextBracketsSequence(t *testing.T) {
 	}
 
 	t.Logf(sequence)
-}
-
-func Test_BracketsToTree(t *testing.T) {
-	sequence := "((())())()"
-	root, err := zeroOneTwoTree.BracketsToTree(sequence)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	json, err := json.MarshalIndent(root, "", " ")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	t.Logf(string(json))
 }
 
 func Test_SearchSolution1(t *testing.T) {
