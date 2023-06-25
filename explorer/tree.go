@@ -146,3 +146,49 @@ func (node *Node) GetAllSubFunctions0() []*Node {
 
 	return childs
 }
+
+func nextNode(nodes *[]*Node, from int, nodesLeft int, occupied []int, internalLoop func(occupied []*Node, free []*Node)) {
+
+	if nodesLeft == 0 {
+
+		occupiedPointers := []*Node{}
+
+		for _, n := range occupied {
+			occupiedPointers = append(occupiedPointers, (*nodes)[n])
+		}
+
+		freePointers := []*Node{}
+		p := 0
+		for _, n := range occupied {
+			for ; p < n; p++ {
+				freePointers = append(freePointers, (*nodes)[p])
+			}
+			p++
+		}
+
+		for ; p < len(*nodes); p++ {
+			freePointers = append(freePointers, (*nodes)[p])
+		}
+
+		//		fmt.Printf("%v\n", occupied)
+		//		fmt.Printf("%v %v\n", freePointers, freePointers)
+		internalLoop(occupiedPointers, freePointers)
+		return
+	}
+
+	for x := from; x <= len(*nodes)-nodesLeft; x++ {
+		newOccupied := append(occupied, x)
+		nextNode(nodes, x+1, nodesLeft-1, newOccupied, internalLoop)
+	}
+
+}
+
+func RecombineNodes(nodes *[]*Node, from uint, to uint, internalLoop func(occupied []*Node, free []*Node)) {
+	for p := from; p <= to; p++ {
+		if p == 0 {
+			internalLoop([]*Node{}, *nodes)
+		} else {
+			nextNode(nodes, 0, int(p), []int{}, internalLoop)
+		}
+	}
+}

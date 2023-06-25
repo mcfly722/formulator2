@@ -2,6 +2,7 @@ package explorer
 
 import (
 	"encoding/json"
+	"fmt"
 	"testing"
 
 	zeroOneTwoTree "github.com/formulator2/explorer/step1/zeroOneTwoTree"
@@ -48,4 +49,35 @@ func Test_GetAllSubFunctions0(t *testing.T) {
 	}
 
 	t.Logf(string(js2))
+}
+
+func Test_RecombineNodes(t *testing.T) {
+	nodes := []*Node{
+		{result: 5},
+		{result: 5},
+		{result: 5},
+		{result: 5},
+		{result: 5},
+	}
+
+	//fmt.Printf("%v\n", nodes)
+
+	print := func(occupied []*Node, free []*Node) {
+
+		for _, node := range free {
+			(*node).result = 0
+		}
+
+		for _, node := range occupied {
+			(*node).result = 1
+		}
+
+		for _, node := range nodes {
+			fmt.Printf("%v", (*node).result)
+		}
+
+		fmt.Printf("\n")
+	}
+
+	RecombineNodes(&nodes, 0, 2, print)
 }
